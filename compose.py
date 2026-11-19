@@ -78,11 +78,15 @@ def star(draw, cx, cy, r, fill):
 
 
 def flag_us(draw, x, y, w, h):
+    # white field first: without it the white stripes are just the sky
+    # showing through, and the flag reads as red bars on blue-grey
+    draw.rectangle([x, y, x + w, y + h], fill=(255, 255, 255))
     stripe = h / 7
     for i in range(7):
         if i % 2 == 0:
             draw.rectangle([x, y + i * stripe, x + w, y + (i + 1) * stripe],
                            fill=(178, 34, 52))
+    draw.rectangle([x, y, x + w, y + h], outline=(40, 40, 40), width=1)
     draw.rectangle([x, y, x + w * 0.45, y + stripe * 4], fill=(60, 59, 110))
     for r in range(4):
         for c in range(5):
@@ -92,7 +96,7 @@ def flag_us(draw, x, y, w, h):
 
 
 def flag_cn(draw, x, y, w, h):
-    draw.rectangle([x, y, x + w, y + h], fill=(222, 41, 16))
+    draw.rectangle([x, y, x + w, y + h], fill=(222, 41, 16), outline=(40, 40, 40), width=1)
     star(draw, x + w * 0.22, y + h * 0.28, 17, (255, 222, 0))
     for dx, dy in [(0.42, 0.14), (0.47, 0.30), (0.47, 0.47), (0.42, 0.62)]:
         star(draw, x + w * dx, y + h * dy, 7, (255, 222, 0))
@@ -102,6 +106,7 @@ def flag_ru(draw, x, y, w, h):
     draw.rectangle([x, y, x + w, y + h / 3], fill=(245, 245, 245))
     draw.rectangle([x, y + h / 3, x + w, y + 2 * h / 3], fill=(0, 57, 166))
     draw.rectangle([x, y + 2 * h / 3, x + w, y + h], fill=(213, 43, 30))
+    draw.rectangle([x, y, x + w, y + h], outline=(40, 40, 40), width=1)
 
 
 def hero(draw, x0, y0, x1, y1):
