@@ -110,46 +110,73 @@ def flag_ru(draw, x, y, w, h):
 
 
 def hero(draw, x0, y0, x1, y1):
-    """Shenzhen skyline under three flags: the trilateral summit."""
-    draw.rectangle([x0, y0, x1, y1], fill=SKY)
-    # sun
-    draw.ellipse([x1 - 150, y0 + 26, x1 - 70, y0 + 106], fill=(240, 200, 90))
-    # skyline silhouette
-    base = y1
-    towers = [(0.02, 0.55), (0.10, 0.38), (0.18, 0.62), (0.27, 0.30),
-              (0.36, 0.50), (0.46, 0.24), (0.56, 0.44), (0.65, 0.33),
-              (0.74, 0.58), (0.83, 0.40), (0.91, 0.52)]
-    for fx, fh in towers:
-        tx = x0 + fx * (x1 - x0)
-        tw = (x1 - x0) * 0.075
-        draw.rectangle([tx, base - (y1 - y0) * fh, tx + tw, base],
-                       fill=(52, 62, 74))
-    # flag poles with flags, standing in front of the skyline
-    fw, fh = 118, 74
+    """The summit itself: three leaders at one long table, flags behind."""
+    draw.rectangle([x0, y0, x1, y1], fill=(228, 231, 233))
+    w = x1 - x0
+    # the three flags on stands along the back wall
+    fw, fh = 138, 84
     flags = [flag_us, flag_cn, flag_ru]
+    names = ["TRUMP", "XI JINPING", "PUTIN"]
+    suits = [(35, 42, 60), (24, 24, 28), (48, 50, 56)]
+    centers = []
     for i, draw_flag in enumerate(flags):
-        cx = x0 + (x1 - x0) * (0.30 + 0.20 * i)
-        top = y0 + 30
-        draw.line([cx, top, cx, base - 6], fill=(30, 30, 30), width=5)
-        draw_flag(draw, cx + 4, top, fw, fh)
+        cx = x0 + w * (0.27 + 0.23 * i)
+        centers.append(cx)
+        draw.line([cx - fw / 2 - 8, y0 + 10, cx - fw / 2 - 8, y1 - 26],
+                  fill=(90, 90, 90), width=3)
+        draw_flag(draw, cx - fw / 2, y0 + 10, fw, fh)
+    # the long table
+    table_top = y1 - 34
+    draw.polygon([(x0 + 60, table_top), (x1 - 60, table_top),
+                  (x1 - 30, y1), (x0 + 30, y1)], fill=(104, 78, 54))
+    draw.rectangle([x0 + 30, y1 - 12, x1 - 30, y1], fill=(84, 62, 42))
+    # the three leaders, seated at the table under their flags
+    for i, cx in enumerate(centers):
+        # shoulders and suit
+        draw.pieslice([cx - 34, table_top - 40, cx + 34, table_top + 28],
+                      180, 360, fill=suits[i])
+        draw.rectangle([cx - 34, table_top - 6, cx + 34, table_top + 2],
+                       fill=suits[i])
+        # head, with a thin cap of hair rather than a helmet
+        draw.ellipse([cx - 13, table_top - 62, cx + 13, table_top - 36],
+                     fill=(233, 198, 165))
+        draw.pieslice([cx - 13, table_top - 63, cx + 13, table_top - 47],
+                      180, 360, fill=(52, 46, 40))
+        # microphone
+        draw.line([cx + 20, table_top, cx + 12, table_top - 22],
+                  fill=(30, 30, 30), width=2)
+        draw.ellipse([cx + 9, table_top - 27, cx + 15, table_top - 21],
+                     fill=(30, 30, 30))
+        # name card on the table
+        draw.rectangle([cx - 37, table_top + 8, cx + 37, table_top + 24],
+                       fill=(255, 255, 255), outline=(120, 120, 120))
+        f = sans("Bold", 11)
+        tw = draw.textlength(names[i], font=f)
+        draw.text((cx - tw / 2, table_top + 10), names[i], font=f, fill=INK)
     draw.rectangle([x0, y0, x1, y1], outline=INK, width=2)
 
 
 def panel(draw, x, y, w, h, tag, tag_color, headline, body):
     draw.rectangle([x, y, x + w, y + h], fill=PANEL, outline=(150, 144, 128), width=2)
-    draw.rectangle([x, y, x + w, y + 30], fill=tag_color)
-    draw.text((x + 12, y + 4), tag, font=sans("Bold", 21), fill=(255, 255, 255))
-    hy = wrapped(draw, x + 12, y + 40, headline, serif("Bold", 31), w - 24, 1.12)
+    draw.rectangle([x, y, x + w, y + 26], fill=tag_color)
+    draw.text((x + 12, y + 3), tag, font=sans("Bold", 17), fill=(255, 255, 255))
+    hy = wrapped(draw, x + 12, y + 33, headline, serif("Bold", 23), w - 24, 1.12)
     # shrink the body until it fits the space the headline left
-    size = 22
-    while size > 15:
+    size = 16
+    while size > 12:
         f = sans("Regular", size)
         probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
-        end = wrapped(probe, 0, 0, body, f, w - 24, 1.18)
-        if hy + 4 + end <= y + h - 8:
+        end = wrapped(probe, 0, 0, body, f, w - 24, 1.2)
+        if hy + 3 + end <= y + h - 6:
             break
         size -= 1
-    wrapped(draw, x + 12, hy + 4, body, sans("Regular", size), w - 24, 1.18)
+    wrapped(draw, x + 12, hy + 3, body, sans("Regular", size), w - 24, 1.2)
+
+
+def brief(draw, x, y, w, lead, body):
+    """One short item in the IN BRIEF strip: a bold place line, then the news."""
+    draw.text((x, y), lead, font=sans("Bold", 15), fill=ACCENT)
+    wrapped(draw, x, y + 21, body, sans("Regular", 14), w, 1.25)
 
 
 def main():
@@ -165,54 +192,88 @@ def main():
     draw.line([MARGIN, 66, W - MARGIN, 66], fill=INK, width=1)
 
     # masthead
-    centered(draw, 74, "THE WORLD TODAY", serif("Bold", 84))
+    centered(draw, 70, "THE WORLD TODAY", serif("Bold", 80))
 
     # date bar: names the day, as the judge asks
-    draw.rectangle([MARGIN, 168, W - MARGIN, 216], fill=INK)
-    centered(draw, 177, "THURSDAY, 19 NOVEMBER 2026", sans("Bold", 38),
+    draw.rectangle([MARGIN, 160, W - MARGIN, 206], fill=INK)
+    centered(draw, 167, "THURSDAY, 19 NOVEMBER 2026", sans("Bold", 36),
              fill=(255, 255, 255))
 
     # main headline: the trilateral summit in Shenzhen
-    centered(draw, 232, "TRUMP, XI AND PUTIN", serif("Bold", 64))
-    centered(draw, 302, "MEET IN SHENZHEN", serif("Bold", 64))
-    centered(draw, 382,
-             "Their first trilateral meeting, on the sidelines of the APEC summit:",
-             sans("Regular", 26), fill=GREY)
-    centered(draw, 414,
-             "nuclear arms, Ukraine and Iran on the agenda, a \u201cpeace declaration\u201d at the end.",
-             sans("Regular", 26), fill=GREY)
+    centered(draw, 218,
+             "SHENZHEN \u00b7 APEC SUMMIT \u00b7 THE FIRST U.S.\u2013CHINA\u2013RUSSIA SUMMIT IN HISTORY",
+             sans("Bold", 19), fill=ACCENT)
+    centered(draw, 244, "TRUMP, XI AND PUTIN HOLD", serif("Bold", 48))
+    centered(draw, 296, "FIRST THREE-WAY SUMMIT", serif("Bold", 48))
+    centered(draw, 356,
+             "Xi hosts the two presidents at Kylin Villa: 90 minutes of talks, nine months",
+             sans("Regular", 20), fill=GREY)
+    centered(draw, 381,
+             "after New START expired \u2014 then a four-point \u201cDeclaration toward Peace.\u201d",
+             sans("Regular", 20), fill=GREY)
 
-    hero(draw, MARGIN, 452, W - MARGIN, 572)
+    hero(draw, MARGIN, 412, W - MARGIN, 520)
+    centered(draw, 528,
+             "Kylin Villa, Shenzhen, on Thursday. None of the three leaders spoke to the press afterwards.",
+             sans("Regular", 16), fill=GREY)
 
-    # four more of the day's stories
+    # the declaration's four points, as a strip under the picture
+    dy = 552
+    draw.text((MARGIN, dy), "THE DECLARATION \u2014 FOUR POINTS",
+              font=sans("Bold", 16), fill=INK)
+    note = "NOT IN THE TEXT: UKRAINE \u00b7 IRAN \u00b7 NORTH KOREA"
+    draw.text((W - MARGIN - draw.textlength(note, font=sans("Bold", 16)), dy),
+              note, font=sans("Bold", 16), fill=ACCENT)
+    points = ["1  Reform the United Nations",
+              "2  Raise refined-fuel supply \u201cfor all nations\u201d",
+              "3  Uphold state officials' immunity; the ICC warned",
+              "4  Nuclear-risk dialogue: \u201ca war that must never be fought\u201d"]
+    colw = (W - 2 * MARGIN - 3 * 14) // 4
+    for i, p in enumerate(points):
+        wrapped(draw, MARGIN + i * (colw + 14), dy + 24, p,
+                sans("Regular", 15), colw, 1.2)
+    draw.line([MARGIN, dy + 70, W - MARGIN, dy + 70], fill=INK, width=2)
+
+    # four more of the day's stories, each with its key numbers
     pw = (W - 2 * MARGIN - 16) // 2
-    ph = 172
-    gy = 590
-    panel(draw, MARGIN, gy, pw, ph, "WORLD COURT", (44, 84, 126),
-          "Myanmar Committed Genocide, Court Rules",
-          "The U.N.'s top court finds, 9\u20136, that Myanmar's state sponsored "
-          "genocide against the Rohingya.")
-    panel(draw, MARGIN + pw + 16, gy, pw, ph, "UKRAINE WAR", (150, 96, 30),
-          "Crimean Bridge Struck a Third Time This Week",
-          "Ukraine's attack partially collapses the bridge to occupied Crimea.")
+    ph = 124
+    gy = 634
+    panel(draw, MARGIN, gy, pw, ph, "WORLD COURT \u00b7 THE HAGUE", (44, 84, 126),
+          "Genocide Verdict on Myanmar",
+          "The U.N.'s top court rules 9\u20136 that Myanmar's 2017 campaign "
+          "against the Rohingya was genocide \u2014 its first such verdict on a "
+          "state. Some 10,000 were killed; reparations are ordered.")
+    panel(draw, MARGIN + pw + 16, gy, pw, ph, "UKRAINE WAR \u00b7 KERCH STRAIT", (150, 96, 30),
+          "Crimean Bridge Hit a Third Time",
+          "Neptune missiles hit the 19 km bridge's railway section hours "
+          "before the summit, halting trains. Tuesday's strike felled a "
+          "227-metre road span. Putin threatens retaliation.")
     gy2 = gy + ph + 12
-    panel(draw, MARGIN, gy2, pw, ph, "MIDDLE EAST", (120, 44, 44),
-          "Israeli Tanks Push Into Central Gaza",
-          "A rare incursion past the ceasefire line; a strike on Nasser "
-          "Hospital kills six.")
-    panel(draw, MARGIN + pw + 16, gy2, pw, ph, "CLIMATE", (46, 110, 70),
-          "COP31 Deadlocked Over Fossil-Fuel Exit",
-          "Final-stage talks split over \u201ctransition away\u201d versus a full "
-          "phase-out, and over finance.")
+    panel(draw, MARGIN, gy2, pw, ph, "MIDDLE EAST \u00b7 KHAN YOUNIS", (120, 44, 44),
+          "Six Killed at Nasser Hospital",
+          "A strike just after midnight hits the surgical wing, killing "
+          "surgeon Rizk Abu Shaira and a boy of 13 among the six. Israel "
+          "says it aimed at a Hamas commander.")
+    panel(draw, MARGIN + pw + 16, gy2, pw, ph, "CLIMATE \u00b7 ANTALYA", (46, 110, 70),
+          "COP31 Stalls on Fossil Fuels",
+          "Ministers enter the final stretch split over how fast to exit "
+          "fossil fuels \u2014 a second straight COP stalled there. The IEA sees "
+          "\u201cno credible pathway back\u201d for energy.")
 
-    # footer ticker
-    draw.rectangle([MARGIN, 958, W - MARGIN, 992], fill=INK)
-    ticker = ("ALSO TODAY: IAEA WARNS NORTH KOREA IS EXPANDING URANIUM ENRICHMENT  \u2022  "
-              "DENMARK BACKS GREENLAND DEFENCE PACT")
-    f = sans("Bold", 19)
-    while draw.textlength(ticker, font=f) > W - 2 * MARGIN - 16 and f.size > 12:
-        f = sans("Bold", f.size - 1)
-    centered(draw, 965, ticker, f, fill=(255, 255, 255))
+    # three shorter items across the foot of the page
+    by = 906
+    draw.text((MARGIN, by), "IN BRIEF", font=sans("Bold", 16), fill=INK)
+    draw.line([MARGIN, by + 22, W - MARGIN, by + 22], fill=INK, width=1)
+    bw = (W - 2 * MARGIN - 2 * 16) // 3
+    brief(draw, MARGIN, by + 30, bw, "STRAIT OF HORMUZ",
+          "Iran drones target U.S. bases in Kuwait and Bahrain after U.S. "
+          "jets hit Qeshm Island. An ADNOC tanker burns: one missing, 11 hurt.")
+    brief(draw, MARGIN + bw + 16, by + 30, bw, "VIENNA \u00b7 NORTH KOREA",
+          "The IAEA says Pyongyang has completed a new uranium-enrichment "
+          "hall at Yongbyon \u2014 \u201ca cause for serious concern.\u201d")
+    brief(draw, MARGIN + 2 * (bw + 16), by + 30, bw, "COPENHAGEN \u00b7 THE ARCTIC",
+          "Parliament votes 109\u20130 to ratify the Greenland security pact: "
+          "new U.S. defence areas at Narsarsuaq and Mestersvig.")
 
     img.save(OUT, optimize=True)
     print("wrote", OUT, os.path.getsize(OUT), "bytes")
